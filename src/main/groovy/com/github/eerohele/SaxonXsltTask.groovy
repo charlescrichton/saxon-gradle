@@ -55,6 +55,10 @@ class SaxonXsltTask extends DefaultTask {
         'false': 'off'
     ]
 
+    void destdir(Object destdir) {
+        this.options.destdir = project.file(destdir)
+    }
+
     void extension(String extension) {
         this.options.extension = extension
     }
@@ -109,8 +113,8 @@ class SaxonXsltTask extends DefaultTask {
             String basename = file.name.take(file.name.lastIndexOf(PERIOD)) //http://stackoverflow.com/a/37313169
             String extensionx = (this.options.extension == null) ? getDefaultOutputExtension(stylesheet) : this.options.extension 
             String filename = "" + basename + extensionx
-            //Use output as a directory path if present
-            (this.options?.output != '') ? new File(this.options.output, filename) : new File(project.buildDir, filename)
+            //Use destdir as a directory path if present
+            (this.options.destdir) ? new File(this.options.destdir, filename) : new File(project.buildDir, filename)
         }
     }
 
@@ -180,7 +184,7 @@ class SaxonXsltTask extends DefaultTask {
     // and output.
     private List<String> getCommonArguments() {
         Map<String, String> commonOptions = this.options.findAll { name, value ->
-            !['input', 'output', 'extension'].contains(name)
+            !['input', 'output', 'extension', 'destdir'].contains(name)
         }.asImmutable()
 
         commonOptions.inject(this.defaultArguments) { arguments, entry ->
