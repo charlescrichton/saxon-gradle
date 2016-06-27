@@ -69,6 +69,11 @@ uriSources
 useAssociatedStylesheet
 ```
 
+### Additional options
+
+* `destdir` - specify the directory where the files should be output.
+* `extension` - specify the file extension to be used. E.g. `.sql`
+
 ## Limitations
 - Currently only supports XSLT. If you need XQuery support, please open an issue
   and I'll see what I can do.
