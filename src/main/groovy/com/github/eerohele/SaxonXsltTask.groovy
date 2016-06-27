@@ -55,6 +55,10 @@ class SaxonXsltTask extends DefaultTask {
         'false': 'off'
     ]
 
+    void extension(String extension) {
+        this.options.extension = extension
+    }
+
     void stylesheet(Object stylesheet) {
         this.options.stylesheet = project.file(stylesheet)
     }
@@ -84,7 +88,7 @@ class SaxonXsltTask extends DefaultTask {
                             .output
                             .@method
 
-        return method ? method : 'xml'
+        return '.' + (method ? method : 'xml')
     }
 
     // Get the default output file name.
@@ -102,10 +106,11 @@ class SaxonXsltTask extends DefaultTask {
         if (inputFiles.size() == 1 && this.options.output) {
             project.file(this.options.output)
         } else {
-            String basename = file.getName().tokenize(PERIOD)[0]
-            String extension = getDefaultOutputExtension(stylesheet)
-            String filename = [basename, extension].join(PERIOD)
-            new File(project.buildDir, filename)
+            String basename = file.name.take(file.name.lastIndexOf(PERIOD)) //http://stackoverflow.com/a/37313169
+            String extensionx = (this.options.extension == null) ? getDefaultOutputExtension(stylesheet) : this.options.extension 
+            String filename = "" + basename + extensionx
+            //Use output as a directory path if present
+            (this.options?.output != '') ? new File(this.options.output, filename) : new File(project.buildDir, filename)
         }
     }
 
@@ -119,7 +124,7 @@ class SaxonXsltTask extends DefaultTask {
     @InputFiles
     @SkipWhenEmpty
     FileCollection getInputFiles() {
-        project.files(this.options.input, this.options.stylesheet)
+        project.files(this.options.input)
     }
 
     SaxonXsltTask() {
@@ -175,7 +180,7 @@ class SaxonXsltTask extends DefaultTask {
     // and output.
     private List<String> getCommonArguments() {
         Map<String, String> commonOptions = this.options.findAll { name, value ->
-            !['input', 'output'].contains(name)
+            !['input', 'output', 'extension'].contains(name)
         }.asImmutable()
 
         commonOptions.inject(this.defaultArguments) { arguments, entry ->
@@ -215,7 +220,7 @@ class SaxonXsltTask extends DefaultTask {
             List<String> arguments = (
                 fileSpecificArguments + commonArguments + parameters
             )
-
+            println "Arguments: " + arguments
             SaxonTransform.main(arguments as String[])
         }
     }
